@@ -4,8 +4,9 @@ from modules.Dark import DarkToken
 from modules.DAIStableCoin import DAIStableCoin
 from modules.Account import Account
 
-class Pool:
+class Pool(Account):
     def __init__(self, dark_token: DarkToken, dai_token: DAIStableCoin, fee: float = 0.003):
+        super().__init__()
         self.dark_token = dark_token
         self.dai_token = dai_token
         self.fee = fee
