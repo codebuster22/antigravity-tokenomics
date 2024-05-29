@@ -28,4 +28,4 @@ class LaunchControlCenter:
 
         # Mint the NFTs and increment the NFT count in the JourneyPhaseManager
         self.fuel_cells_token.mint(from_account, amount)
-        self.journey_phase_manager.increment_nft_count(amount)
+        self.journey_phase_manager.increment_nft_count(from_account, amount)

@@ -1,4 +1,4 @@
-# modules/ERC721.py
+# modules/ERC721Token.py
 
 from modules.Account import Account
 
@@ -15,10 +15,6 @@ class ERC721Token(Account):
     def balance_of(self, holder: Account) -> int:
         """Returns token count of account"""
         return self.balances.get(holder.get_address(), 0)
-
-    def total_supply(self) -> int:
-        """Returns the total supply of tokens"""
-        return self.total_supply
 
     def mint(self, to: Account, amount: int):
         """Mints (creates new) tokens for the given account"""
@@ -40,6 +36,10 @@ class ERC721Token(Account):
         assert self.balances.get(owner.get_address(), 0) >= amount, 'Burn not authorized by owner'
         self.balances[owner.get_address()] -= amount
         self.total_supply -= amount
+
+    def get_total_supply(self) -> int:
+        """Returns the total supply of the token"""
+        return self.total_supply
 
     def __str__(self):
         return f'Token {self.name} ({self.address})'
