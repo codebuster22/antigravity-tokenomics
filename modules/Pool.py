@@ -12,6 +12,7 @@ class Pool(Account):
         self.fee = fee
         self.dark_reserve = 0
         self.dai_reserve = 0
+        self.total_volume = 0  # Track total trading volume
 
     def add_liquidity(self, provider: Account, dark_amount: int, dai_amount: int):
         assert self.dai_token.balance_of(provider) >= dai_amount, 'Insufficient DAI balance'
@@ -42,6 +43,8 @@ class Pool(Account):
         self.dai_reserve += dai_amount
         self.dark_reserve -= dark_amount
 
+        self.total_volume += dai_amount  # Update total volume
+
     def sell(self, seller: Account, dark_amount: int):
         amount_with_fee = dark_amount * (1 - self.fee)
         dai_amount = amount_with_fee * self.dai_reserve / self.dark_reserve
@@ -55,7 +58,9 @@ class Pool(Account):
         self.dark_reserve += dark_amount
         self.dai_reserve -= dai_amount
 
+        self.total_volume += dai_amount  # Update total volume
+
     def __str__(self):
-        return f'Pool: Dark reserve = {self.dark_reserve}, DAI reserve = {self.dai_reserve}, Fee = {self.fee}'
+        return f'Pool: Dark reserve = {self.dark_reserve}, DAI reserve = {self.dai_reserve}, Fee = {self.fee}, Total volume = {self.total_volume}'
 
     __repr__ = __str__
