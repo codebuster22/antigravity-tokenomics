@@ -1,5 +1,7 @@
 # modules/JourneyPhaseManager.py
 
+from modules.Account import Account
+
 class JourneyPhaseManager:
     PHASE_DURATIONS = [15, 90, 1]  # Durations for Phase 1, Phase 2, and Phase 3
     TOTAL_JOURNEYS = 33
@@ -40,7 +42,3 @@ class JourneyPhaseManager:
 
     def get_account_nft_balance(self, journey, account: Account) -> int:
         return self.journey_balances[journey].get(account.get_address(), 0)
-
-# 1) keep track of total supply of the nfts in ERC721Token.
-# 2) Update_balance should happen in increment_nfts and decrement_nfts, as they both happen at the same time.
-# 3) Do not give example code
