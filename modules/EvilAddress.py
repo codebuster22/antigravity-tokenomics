@@ -25,7 +25,7 @@ class EvilAddress(Account):
     def mint_fuel_cells(self):
         """Mints FuelCells NFTs using Dark tokens"""
         current_journey = self.jpm.get_current_journey()
-        amount_to_mint = np.floor(self.starting_balance * self.b * (self.r ** (current_journey - 1)))
+        amount_to_mint = np.floor(self.starting_balance * self.b * (self.r ** (current_journey - 1)) / 100)
         
         if self.dark_token.balance_of(self) < amount_to_mint:
             raise ValueError("Insufficient Dark tokens to mint FuelCells NFTs")
