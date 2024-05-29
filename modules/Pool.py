@@ -12,7 +12,13 @@ class Pool:
         self.dark_reserve = 0
         self.dai_reserve = 0
 
-    def add_liquidity(self, dark_amount: int, dai_amount: int):
+    def add_liquidity(self, provider: Account, dark_amount: int, dai_amount: int):
+        assert self.dai_token.balance_of(provider) >= dai_amount, 'Insufficient DAI balance'
+        assert self.dark_token.balance_of(provider) >= dark_amount, 'Insufficient Dark token balance'
+
+        self.dai_token.transfer(provider, self, dai_amount)
+        self.dark_token.transfer(provider, self, dark_amount)
+
         self.dark_reserve += dark_amount
         self.dai_reserve += dai_amount
 
@@ -52,34 +58,3 @@ class Pool:
         return f'Pool: Dark reserve = {self.dark_reserve}, DAI reserve = {self.dai_reserve}, Fee = {self.fee}'
 
     __repr__ = __str__
-
-# Example usage
-if __name__ == "__main__":
-    dark_token = DarkToken()
-    dai_token = DAIStableCoin()
-    user_account = Account()
-    pool_account = Account()
-
-    # Mint some tokens for the user and the pool
-    dark_token.mint(user_account, 1000)
-    dai_token.mint(user_account, 5000)
-    dark_token.mint(pool_account, 10000)
-    dai_token.mint(pool_account, 50000)
-
-    # Initialize the Pool
-    pool = Pool(dark_token, dai_token)
-
-    # Add liquidity to the pool
-    pool.add_liquidity(10000, 50000)
-
-    # User buys Dark tokens
-    pool.buy(user_account, 1000)
-
-    # User sells Dark tokens
-    pool.sell(user_account, 50)
-
-    print(pool)
-
-    print("User Balances:")
-    print(f"Dark: {dark_token.balance_of(user_account)}")
-    print(f"DAI: {dai_token.balance_of(user_account)}")
