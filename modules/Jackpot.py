@@ -62,7 +62,6 @@ from modules.Account import Account
 from modules.Dark import DarkToken
 from modules.JourneyPhaseManager import JourneyPhaseManager
 from modules.FuelCells import FuelCellsToken
-import random
 import numpy as np
 
 class Jackpot:
@@ -74,6 +73,7 @@ class Jackpot:
         self.common_ratio = 2
         self.starting_payout_percentage = 0.09775
         self.lotteries_per_journey = 10
+        self.lottery_winnings = {}  # Dictionary to store total lottery winnings per account per journey
 
     def calculate_payout_percentage(self, lottery_number: int) -> float:
         """Calculate the payout percentage for a given lottery number"""
@@ -89,8 +89,11 @@ class Jackpot:
         return payouts
 
     def select_winners(self, participants: list, num_winners: int) -> list:
-        """Select winners randomly from the list of participants"""
-        return random.sample(participants, num_winners)
+        """Select winners based on probability from the list of participants"""
+        total_nfts = sum([self.journey_phase_manager.get_account_nft_balance(self.journey_phase_manager.get_current_journey(), account) for account in participants])
+        probabilities = [self.journey_phase_manager.get_account_nft_balance(self.journey_phase_manager.get_current_journey(), account) / total_nfts for account in participants]
+        winners = np.random.choice(participants, num_winners, p=probabilities, replace=True)
+        return winners
 
     def conduct_lottery(self):
         """Conducts the lottery for the current journey"""
@@ -104,14 +107,32 @@ class Jackpot:
         total_winners = max(1, total_nfts_minted * 5 // 100)  # Ensure at least one winner
         winners_per_lottery = max(1, total_winners // self.lotteries_per_journey)
 
-        participants = [account for account, balance in self.journey_phase_manager.journey_balances[current_journey].items() if balance > 0]
+        # Convert addresses (strings) to Account objects and ensure they are in the balances
+        participants = []
+        for address in self.journey_phase_manager.journey_balances[current_journey].keys():
+            if self.journey_phase_manager.journey_balances[current_journey][address] > 0:
+                account = Account(address)
+                if address not in self.dark_token.balances:
+                    self.dark_token.balances[address] = 0
+                participants.append(account)
 
         payouts = self.calculate_payouts(current_journey, starting_balance)
+
+        if current_journey not in self.lottery_winnings:
+            self.lottery_winnings[current_journey] = {}
 
         for i in range(self.lotteries_per_journey):
             winners = self.select_winners(participants, winners_per_lottery)
             payout_amount = payouts[i] / winners_per_lottery
             for winner in winners:
                 self.dark_token.transfer(self.account, winner, payout_amount)
+                winner_address = winner.get_address()
+                if winner_address not in self.lottery_winnings[current_journey]:
+                    self.lottery_winnings[current_journey][winner_address] = 0
+                self.lottery_winnings[current_journey][winner_address] += payout_amount
 
         return "Lottery conducted and payouts distributed."
+
+    def get_lottery_winnings(self, journey: int, account: Account) -> int:
+        """Get the total lottery winnings for an account in a specific journey"""
+        return self.lottery_winnings.get(journey, {}).get(account.get_address(), 0)
