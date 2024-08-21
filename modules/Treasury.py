@@ -13,6 +13,7 @@ class Treasury:
         self.yield_formula_r = 0.9
         self.journey_yields = {journey: 0 for journey in range(1, 34)}
         self.total_yield_distributed = 0
+        self.remaining_balance = 0
 
     def calculate_yield(self, journey: int) -> float:
         return self.yield_formula_a * (self.yield_formula_r ** (journey - 1))
@@ -21,8 +22,11 @@ class Treasury:
         return self.yield_formula_a * (self.yield_formula_r ** journey - 1) / (self.yield_formula_r - 1)
 
     def distribute_yield(self, journey_phase_manager: JourneyPhaseManager):
-        treasury_balance = self.dark_token.balance_of(self.account)
-        for journey in range(1, journey_phase_manager.get_current_journey() + 1):
+        treasury_balance = self.dark_token.balance_of(self.account) - self.total_yield_distributed
+        total_yield_percentage = self.total_yield_percentage(journey_phase_manager.get_current_journey())
+        total_yield_value = total_yield_percentage * treasury_balance / 100
+        self.remaining_balance = treasury_balance - total_yield_value
+        for journey in range(1, min(journey_phase_manager.get_current_journey() + 1, 33)):
             yield_percentage = self.calculate_yield(journey)
             yield_value = yield_percentage * treasury_balance / 100
             self.journey_yields[journey] += yield_value

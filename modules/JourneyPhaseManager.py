@@ -17,8 +17,7 @@ class JourneyPhaseManager:
             self.current_phase += 1
         else:
             self.current_phase = 1
-            if self.current_journey < self.TOTAL_JOURNEYS:
-                self.current_journey += 1
+            self.current_journey += 1
 
     def get_current_phase(self):
         return self.current_phase

@@ -72,7 +72,7 @@ class Jackpot:
         self.fuel_cells_token = fuel_cells_token
         self.common_ratio = 2
         self.starting_payout_percentage = 0.09775
-        self.lotteries_per_journey = 10
+        self.lotteries_per_journey = 3
         self.lottery_winnings = {}  # Dictionary to store total lottery winnings per account per journey
 
     def calculate_payout_percentage(self, lottery_number: int) -> float:
@@ -118,11 +118,15 @@ class Jackpot:
 
         payouts = self.calculate_payouts(current_journey, starting_balance)
 
+        total_payout = sum(payouts)
+        total_lottery_winner = 0
+
         if current_journey not in self.lottery_winnings:
             self.lottery_winnings[current_journey] = {}
 
         for i in range(self.lotteries_per_journey):
             winners = self.select_winners(participants, winners_per_lottery)
+            total_lottery_winner += len(winners)
             payout_amount = payouts[i] / winners_per_lottery
             for winner in winners:
                 self.dark_token.transfer(self.account, winner, payout_amount)
@@ -131,7 +135,7 @@ class Jackpot:
                     self.lottery_winnings[current_journey][winner_address] = 0
                 self.lottery_winnings[current_journey][winner_address] += payout_amount
 
-        return "Lottery conducted and payouts distributed."
+        return f"{self.lotteries_per_journey} Lottery conducted and {total_payout} payouts distributed to total {total_lottery_winner} winners."
 
     def get_lottery_winnings(self, journey: int, account: Account) -> int:
         """Get the total lottery winnings for an account in a specific journey"""
